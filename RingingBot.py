@@ -47,6 +47,7 @@ class RingingBot:
             if not self.is_handstroke:
                 sleep(self.bell_gap)
             self.is_handstroke = not self.is_handstroke
+        self.row_gen.reset()
         self.log("Stopped Ringing")
 
     def ring_row(self, row: []):
@@ -71,7 +72,7 @@ class RingingBot:
         elif call == Calls.Single:
             self.row_gen.single()
         elif call == Calls.ThatsAll:
-            self.row_gen.thats_all()
+            self.row_gen.reset()
         else:
             self.log(f"Unhandled call '{call}'")
 

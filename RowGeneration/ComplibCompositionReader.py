@@ -21,9 +21,10 @@ class ComplibCompositionReader(RowGenerator):
 
         stage = len(self.loaded_rows[0])
         if stage % 2:
-            # Add cover
+            # Add a cover bell
             stage += 1
-            self.loaded_rows = [row.append(stage) for row in self.loaded_rows]
+            for row in self.loaded_rows:
+                row.append(stage)
         super().__init__(stage, auto_start, logger)
 
     def _gen_row(self, previous_row: List[int], is_handstroke: bool, index: int) -> List[int]:

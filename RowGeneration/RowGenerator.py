@@ -36,10 +36,12 @@ class RowGenerator(ABC):
     def single(self):
         self._has_single = True
 
-    def thats_all(self):
+    def reset(self):
+        self.log("Reset")
         self._index = 0
         self._has_go = False
         self._row = self._rounds()
+        self.reset_calls()
 
     def reset_calls(self):
         self.log("Reset calls")
