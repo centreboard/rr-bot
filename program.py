@@ -1,5 +1,8 @@
 from RingingBot import RingingBot
-from RowGenerator import PlainHuntGenerator, PlaceNotationGenerator
+from RowGeneration.ComplibCompositionReader import ComplibCompositionReader
+from RowGeneration.MethodPlaceNotationGenerator import MethodPlaceNotationGenerator
+from RowGeneration.PlainHuntGenerator import PlainHuntGenerator
+from RowGeneration.PlaceNotationGenerator import PlaceNotationGenerator
 from Tower import Tower
 
 DEFAULT_URL = "http://localhost:8080"
@@ -15,7 +18,9 @@ def null_log(string):
 def main():
     tower = Tower(TOWER_ID, DEFAULT_URL)
     # row_gen = PlainHuntGenerator(8)
-    row_gen = PlaceNotationGenerator(8, "&x1x1x1x1", "2")
+    # row_gen = PlaceNotationGenerator(8, "&x1x1x1x1", "2")
+    # row_gen = ComplibCompositionReader(65034)
+    row_gen = MethodPlaceNotationGenerator("Cambridge Surprise Minor")
     bot = RingingBot(tower, row_gen, INTERBELL_GAP, auto_start=True)
 
     bot.initialise_tower()

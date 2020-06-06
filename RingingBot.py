@@ -2,7 +2,7 @@ from time import sleep
 
 from Calls import Calls
 from Tower import Tower
-from RowGenerator import RowGenerator
+from RowGeneration.RowGenerator import RowGenerator
 
 
 class RingingBot:
