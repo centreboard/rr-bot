@@ -1,12 +1,12 @@
 from time import sleep
 
 from Calls import Calls
-from Tower import Tower
+from RingingRoomTower import RingingRoomTower
 from RowGeneration.RowGenerator import RowGenerator
 
 
 class RingingBot:
-    def __init__(self, tower: Tower, row_gen: RowGenerator, bell_gap: float, auto_start=True, logger=print):
+    def __init__(self, tower: RingingRoomTower, row_gen: RowGenerator, bell_gap: float, auto_start=True, logger=print):
         self.tower = tower
         self.row_gen = row_gen
         self.bell_gap = bell_gap
@@ -19,25 +19,24 @@ class RingingBot:
         self.is_handstroke = True
 
         tower.on_call = self.process_call
-        tower.on_reset = self.process_reset
+        tower.on_reset = self._process_reset
 
-    def main_loop(self):
-        while True:
-            self.tower.wait_loaded()
+    def main_loop(self, initialise_tower: bool):
+        with self.tower:
+            if initialise_tower:
+                self._initialise_tower()
 
-            if self.auto_start and not self.tower.user_controlled(1):
-                self.tower.make_call(Calls.LookTo)
-                self.should_ring = True
-                sleep(3)
-            if not self.should_ring or self.should_stand:
-                sleep(self.bell_gap)
-                continue
-            self.ring()
+            while True:
+                self.tower.wait_loaded()
 
-    def initialise_tower(self):
-        self.log("initialise_tower")
-        self.tower.set_number_of_bells(self.row_gen.stage)
-        self.tower.set_at_hand()
+                if self.auto_start and not self.tower.user_controlled(1):
+                    self.tower.make_call(Calls.LookTo)
+                    self.should_ring = True
+                    sleep(3)
+                if not self.should_ring or self.should_stand:
+                    sleep(self.bell_gap)
+                    continue
+                self.ring()
 
     def ring(self):
         self.log("Start Ringing")
@@ -76,8 +75,13 @@ class RingingBot:
         else:
             self.log(f"Unhandled call '{call}'")
 
-    def process_reset(self):
+    def _process_reset(self):
         self.should_ring = False
+
+    def _initialise_tower(self):
+        self.log("initialise_tower")
+        self.tower.set_number_of_bells(self.row_gen.stage)
+        self.tower.set_at_hand()
 
     def log(self, message):
         self._logger(f"BOT: {message}")

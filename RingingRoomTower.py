@@ -1,9 +1,10 @@
 from time import sleep
+from typing import Optional
 
 import socketio
 
 
-class Tower:
+class RingingRoomTower:
     def __init__(self, tower_id: int, url: str, log_bells=False, logger=print):
         self.tower_id = tower_id
         self._logger = logger
@@ -14,15 +15,23 @@ class Tower:
         self.on_call = None
         self.on_reset = None
 
-        self._socket_io_client = self._create_client(url)
+        self._url = url
+        self._socket_io_client: Optional[socketio.Client] = None
+
+    def __enter__(self):
+        if self._socket_io_client is not None:
+            raise Exception("Trying to connect twice")
+        self._socket_io_client = self._create_client()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._socket_io_client:
+            self._socket_io_client.disconnect()
+            self._socket_io_client = None
 
     @property
     def number_of_bells(self):
         return len(self._bell_state)
-
-    def wait_loaded(self):
-        while not self._bell_state:
-            sleep(0.1)
 
     def ring_bell(self, bell: int, handstroke: bool):
         try:
@@ -33,7 +42,7 @@ class Tower:
             if stroke != handstroke:
                 self.log_error(f"Bell {bell} on opposite stroke")
                 return False
-            self._socket_io_client.emit("c_bell_rung", {"bell": bell, "stroke": stroke, "tower_id": self.tower_id})
+            self._emit("c_bell_rung", {"bell": bell, "stroke": stroke, "tower_id": self.tower_id}, "")
             return True
         except Exception as e:
             self._logger(e)
@@ -43,20 +52,26 @@ class Tower:
         return self._assigned_users.get(bell, "") != ""
 
     def make_call(self, call: str):
-        self.log_emit(f"Call '{call}'")
-        self._socket_io_client.emit("c_call", {"call": call, "tower_id": self.tower_id})
+        self._emit("c_call", {"call": call, "tower_id": self.tower_id}, f"Call '{call}'")
 
     def set_at_hand(self):
-        self.log_emit(f"Set at hand")
-        self._socket_io_client.emit("c_set_bells", {"tower_id": self.tower_id})
+        self._emit("c_set_bells", {"tower_id": self.tower_id}, f"Set at hand")
 
     def set_number_of_bells(self, number: int):
-        self.log_emit(f"Set number of bells '{number}'")
-        self._socket_io_client.emit("c_size_change", {"new_size": number, "tower_id": self.tower_id})
+        self._emit("c_size_change", {"new_size": number, "tower_id": self.tower_id}, f"Set number of bells '{number}'")
 
-    def _create_client(self, url):
+    def wait_loaded(self):
+        if self._socket_io_client is None:
+            raise Exception("Not Connected")
+        while not self._bell_state:
+            sleep(0.1)
+
+    def _create_client(self):
         sio = socketio.Client()
-        sio.connect(url)
+        sio.connect(self._url)
+        self.log(f"Connected to {self._url}")
+        sio.emit("c_join", {"anonymous_user": True, "tower_id": self.tower_id})
+
         # Currently just care about global state when a bell in rung
         sio.on("s_bell_rung", self._on_global_bell_state)
         sio.on("s_global_state", self._on_global_bell_state)
@@ -64,10 +79,18 @@ class Tower:
         sio.on("s_assign_user", self._on_assign_user)
         sio.on("s_call", self._on_call)
 
-        sio.emit("c_join", {"anonymous_user": True, "tower_id": self.tower_id})
         sio.emit('c_request_global_state', {"tower_id": self.tower_id})
 
         return sio
+
+    def _emit(self, event: str, data, message: str):
+        if self._socket_io_client is None:
+            raise Exception("Not Connected")
+
+        self._socket_io_client.emit(event, data)
+
+        if message:
+            self.log_emit(message)
 
     def _on_global_bell_state(self, data):
         bell_state = data["global_bell_state"]
@@ -100,11 +123,14 @@ class Tower:
     def _bells_set_at_hand(number: int):
         return [True for _ in range(number)]
 
+    def log(self, message: str):
+        self._logger(f"TOWER: {message}")
+
     def log_error(self, message: str):
-        self._logger(f"ERROR: {message}")
+        self._logger(f"TOWER - ERROR: {message}")
 
     def log_emit(self, message: str):
-        self._logger(f"EMIT: {message}")
+        self._logger(f"TOWER - EMIT: {message}")
 
     def log_received(self, message: str):
-        self._logger(f"RECEIVED: {message}")
+        self._logger(f"TOWER - RECEIVED: {message}")

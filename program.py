@@ -4,7 +4,7 @@ from RowGeneration.DixonoidsGenerator import DixonoidsGenerator
 from RowGeneration.MethodPlaceNotationGenerator import MethodPlaceNotationGenerator
 from RowGeneration.PlainHuntGenerator import PlainHuntGenerator
 from RowGeneration.PlaceNotationGenerator import PlaceNotationGenerator
-from Tower import Tower
+from RingingRoomTower import RingingRoomTower
 
 DEFAULT_URL = "http://localhost:8080"
 INTERBELL_GAP = 0.2
@@ -17,7 +17,7 @@ def null_log(string):
 
 
 def main():
-    tower = Tower(TOWER_ID, DEFAULT_URL)
+    tower = RingingRoomTower(TOWER_ID, DEFAULT_URL)
 
     # row_gen = PlainHuntGenerator(8)
     # row_gen = PlaceNotationGenerator(8, "&x1x1x1x1", "2")
@@ -28,8 +28,7 @@ def main():
 
     bot = RingingBot(tower, row_gen, INTERBELL_GAP, auto_start=True)
 
-    bot.initialise_tower()
-    bot.main_loop()
+    bot.main_loop(initialise_tower=True)
 
 
 if __name__ == '__main__':
