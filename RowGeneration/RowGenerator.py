@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
+from typing import List
+
+from RowGeneration.Helpers import Helpers
 
 
 class RowGenerator(ABC):
     def __init__(self, stage: int, auto_start=True, logger=print):
         self.stage = stage
-        self.logger = logger
+        self._logger = logger
 
         self._has_go = auto_start
         self._has_bob = False
@@ -19,6 +22,9 @@ class RowGenerator(ABC):
             return self._rounds()
         self._row = self._gen_row(self._row, is_handstroke, self._index)
         self._index += 1
+
+        self.log(" ".join([Helpers.convert_to_bell_string(bell) for bell in self._row]))
+
         return self._row
 
     def go(self):
@@ -35,19 +41,22 @@ class RowGenerator(ABC):
         self._has_go = False
         self._row = self._rounds()
 
+    def reset_calls(self):
+        self.log("Reset calls")
+        self._has_bob = False
+        self._has_single = False
+
     def _rounds(self):
         return [i for i in range(1, self.stage + 1)]
 
+    def log(self, message: str):
+        self._logger(f"ROWGEN: {message}")
+
     @abstractmethod
-    def _gen_row(self, previous_row: [int], is_handstroke: bool, index: int) -> [int]:
+    def _gen_row(self, previous_row: List[int], is_handstroke: bool, index: int) -> List[int]:
         pass
 
-    _lookup = ["Intentionally Left Blank", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "E", "T"]
-
-    def convert_bell_string(self, bell: str) -> int:
-        return self._lookup.index(bell)
-
-    def permute(self, row: [int], places: [int]) -> [int]:
+    def permute(self, row: List[int], places: List[int]) -> List[int]:
         new_row = list(row)
         i = 1
         if places and places[0] % 2 == 0:

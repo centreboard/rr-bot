@@ -6,7 +6,7 @@ import socketio
 class Tower:
     def __init__(self, tower_id: int, url: str, log_bells=False, logger=print):
         self.tower_id = tower_id
-        self.logger = logger
+        self._logger = logger
         self._log_bells = log_bells
         self._bell_state = []
         self._assigned_users = {}
@@ -36,7 +36,7 @@ class Tower:
             self._socket_io_client.emit("c_bell_rung", {"bell": bell, "stroke": stroke, "tower_id": self.tower_id})
             return True
         except Exception as e:
-            self.logger(e)
+            self._logger(e)
             return False
 
     def user_controlled(self, bell: int):
@@ -101,10 +101,10 @@ class Tower:
         return [True for _ in range(number)]
 
     def log_error(self, message: str):
-        self.logger(f"ERROR: {message}")
+        self._logger(f"ERROR: {message}")
 
     def log_emit(self, message: str):
-        self.logger(f"EMIT: {message}")
+        self._logger(f"EMIT: {message}")
 
     def log_received(self, message: str):
-        self.logger(f"RECEIVED: {message}")
+        self._logger(f"RECEIVED: {message}")

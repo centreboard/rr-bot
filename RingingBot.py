@@ -11,7 +11,7 @@ class RingingBot:
         self.row_gen = row_gen
         self.bell_gap = bell_gap
         self.auto_start = auto_start
-        self.logger = logger
+        self._logger = logger
 
         self.should_ring = False
         self.should_stand = False
@@ -29,7 +29,7 @@ class RingingBot:
                 self.tower.make_call(Calls.LookTo)
                 self.should_ring = True
                 sleep(3)
-            if not self.should_ring:
+            if not self.should_ring or self.should_stand:
                 sleep(self.bell_gap)
                 continue
             self.ring()
@@ -79,4 +79,4 @@ class RingingBot:
         self.should_ring = False
 
     def log(self, message):
-        self.logger(f"BOT: {message}")
+        self._logger(f"BOT: {message}")
