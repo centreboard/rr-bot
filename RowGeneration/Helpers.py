@@ -1,16 +1,22 @@
 from typing import List
 
+import itertools
+
 
 class Helpers:
+    cross_pn = []
+
     @staticmethod
     def convert_pn(pn_str: str) -> List[List[int]]:
-        cross_pn = []
+        if "," in pn_str:
+            return list(itertools.chain.from_iterable(Helpers.convert_pn(part) for part in pn_str.split(",")))
 
         symmetric = pn_str.startswith('&')
 
         cleaned = pn_str.replace('x', '-').replace('-', '.-.').strip('.& ').split('.')
 
-        converted = [[Helpers.convert_bell_string(y) for y in place] if place != '-' else cross_pn for place in cleaned]
+        converted = [[Helpers.convert_bell_string(y) for y in place] if place != '-' else Helpers.cross_pn
+                     for place in cleaned]
         if symmetric:
             return converted + list(reversed(converted[:-1]))
         else:

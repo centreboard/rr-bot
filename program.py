@@ -22,9 +22,9 @@ def main():
     # row_gen = PlainHuntGenerator(8)
     # row_gen = PlaceNotationGenerator(8, "&x1x1x1x1", "2")
     # row_gen = ComplibCompositionReader(65034)
-    # row_gen = MethodPlaceNotationGenerator("Plain Bob Doubles")
+    row_gen = MethodPlaceNotationGenerator("Single Oxford Bob Triples")
     # row_gen = DixonoidsGenerator(6, DixonoidsGenerator.DixonsRules)
-    row_gen = PlaceNotationGenerator.grandsire(5)
+    # row_gen = PlaceNotationGenerator.stedman(11)
 
     bot = RingingBot(tower, row_gen, INTERBELL_GAP, auto_start=True)
 

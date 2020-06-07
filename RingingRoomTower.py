@@ -21,7 +21,7 @@ class RingingRoomTower:
     def __enter__(self):
         if self._socket_io_client is not None:
             raise Exception("Trying to connect twice")
-        self._socket_io_client = self._create_client()
+        self._create_client()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -63,25 +63,34 @@ class RingingRoomTower:
     def wait_loaded(self):
         if self._socket_io_client is None:
             raise Exception("Not Connected")
+        iteration = 0
         while not self._bell_state:
+            iteration += 1
+            if iteration % 50 == 0:
+                self._join_tower()
+                self._request_global_state()
             sleep(0.1)
 
     def _create_client(self):
-        sio = socketio.Client()
-        sio.connect(self._url)
+        self._socket_io_client = socketio.Client()
+        self._socket_io_client.connect(self._url)
         self.log(f"Connected to {self._url}")
-        sio.emit("c_join", {"anonymous_user": True, "tower_id": self.tower_id})
+        self._join_tower()
 
         # Currently just care about global state when a bell in rung
-        sio.on("s_bell_rung", self._on_global_bell_state)
-        sio.on("s_global_state", self._on_global_bell_state)
-        sio.on("s_size_change", self._on_size_change)
-        sio.on("s_assign_user", self._on_assign_user)
-        sio.on("s_call", self._on_call)
+        self._socket_io_client.on("s_bell_rung", self._on_global_bell_state)
+        self._socket_io_client.on("s_global_state", self._on_global_bell_state)
+        self._socket_io_client.on("s_size_change", self._on_size_change)
+        self._socket_io_client.on("s_assign_user", self._on_assign_user)
+        self._socket_io_client.on("s_call", self._on_call)
 
-        sio.emit('c_request_global_state', {"tower_id": self.tower_id})
+        self._request_global_state()
 
-        return sio
+    def _join_tower(self):
+        self._emit("c_join", {"anonymous_user": True, "tower_id": self.tower_id}, f"Joining tower {self.tower_id}")
+
+    def _request_global_state(self):
+        self._emit('c_request_global_state', {"tower_id": self.tower_id}, "Request state")
 
     def _emit(self, event: str, data, message: str):
         if self._socket_io_client is None:

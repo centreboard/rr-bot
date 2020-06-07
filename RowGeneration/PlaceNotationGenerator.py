@@ -1,38 +1,45 @@
-from typing import List
+from typing import List, Dict, Union, Tuple
 
 from RowGeneration.Helpers import Helpers
 from RowGeneration.RowGenerator import RowGenerator
 
 
 class PlaceNotationGenerator(RowGenerator):
-    def __init__(self, stage: int, method: str, plain: str, bob: str = '14', single: str = '1234', auto_start=True,
-                 logger=print):
-        super(PlaceNotationGenerator, self).__init__(stage, auto_start, logger)
-        self.method_pn = Helpers.convert_pn(method)
-        self.plain_pn = Helpers.convert_pn(plain)
-        self.bob_pn = Helpers.convert_pn(bob)
-        self.single_pn = Helpers.convert_pn(single)
+    DefaultBob = {-1: '14'}
+    DefaultSingle = {-1: '1234'}
 
-        assert len(self.plain_pn) == len(self.bob_pn)
-        assert len(self.plain_pn) == len(self.single_pn)
-        self._mod_index = len(self.method_pn) + len(self.plain_pn)
+    def __init__(self, stage: int, method: str, bob: Dict[int, str] = None, single: Dict[int, str] = None,
+                 auto_start=True, logger=print):
+        super(PlaceNotationGenerator, self).__init__(stage, auto_start, logger)
+        if bob is None:
+            bob = PlaceNotationGenerator.DefaultBob
+        if single is None:
+            single = PlaceNotationGenerator.DefaultSingle
+
+        self.method_pn = Helpers.convert_pn(method)
+        self.lead_len = len(self.method_pn)
+
+        self.bobs_pn = {i % self.lead_len: Helpers.convert_pn(pn) for i, pn in bob.items()}
+        self.singles_pn = {i % self.lead_len: Helpers.convert_pn(pn) for i, pn in single.items()}
+
+        self._generating_call_pn: List[List[int]] = []
 
     def _gen_row(self, previous_row: List[int], is_handstroke: bool, index: int) -> List[int]:
-        lead_index = index % self._mod_index
+        lead_index = index % self.lead_len
 
-        if lead_index < len(self.method_pn):
-            place_notation = self.method_pn[lead_index]
+        if self._has_bob and self.bobs_pn.get(lead_index):
+            self._generating_call_pn = self.bobs_pn[lead_index]
+            self.log(f"Bob at index {lead_index}")
+            self.reset_calls()
+        elif self._has_single and self.singles_pn.get(lead_index):
+            self._generating_call_pn = self.singles_pn[lead_index]
+            self.log(f"Single at index {lead_index}")
+            self.reset_calls()
+
+        if self._generating_call_pn:
+            place_notation = self._generating_call_pn.pop(0)
         else:
-            lead_end_index = lead_index - len(self.method_pn)
-
-            if self._has_bob:
-                place_notation = self.bob_pn[lead_end_index]
-            elif self._has_single:
-                place_notation = self.single_pn[lead_end_index]
-            else:
-                place_notation = self.plain_pn[lead_end_index]
-            if lead_end_index + 1 == len(self.bob_pn):
-                self.reset_calls()
+            place_notation = self.method_pn[lead_index]
 
         return self.permute(previous_row, place_notation)
 
@@ -42,31 +49,29 @@ class PlaceNotationGenerator(RowGenerator):
 
         stage_bell = Helpers.convert_to_bell_string(stage)
 
-        main_body = [stage_bell if i % 2 else "1" for i in range(1, 2 * stage - 1)]
+        main_body = [stage_bell if i % 2 else "1" for i in range(1, 2 * stage + 1)]
         main_body[0] = "3"
         notation = ".".join(main_body)
-        return PlaceNotationGenerator(stage + 1, notation, f"{stage_bell}.1", "3.1", "3.123")
+        return PlaceNotationGenerator(stage + 1, notation, bob={-2: "3"}, single={-2: "3.123"})
 
-    # @staticmethod
-    # def stedman(stage: int):
-    #     assert stage % 2
-    #
-    #     if stage == 5:
-    #         return PlaceNotationGenerator.stedman_doubles()
-    #
-    #     stage_bell = Helpers.convert_to_bell_string(stage)
-    #     stage_bell_1 = Helpers.convert_to_bell_string(stage - 1)
-    #     stage_bell_2 = Helpers.convert_to_bell_string(stage - 2)
-    #
-    #     # Note only supporting calls at end of slow sixes
-    #     main_body = [stage_bell if i % 2 else "1" for i in range(1, 2 * stage - 1)]
-    #     main_body[0] = "3"
-    #     notation = f"3.1.{stage_bell}.3.1.3.1.3"
-    #     return PlaceNotationGenerator(stage + 1, notation, f"{stage_bell}.1.3.1", f"{stage_bell_2}.1.3.1",
-    #                                   f"{stage_bell_2}{stage_bell_1}{stage_bell}.1.3.1")
-    #
-    # @staticmethod
-    # def stedman_doubles():
-    #     # Note only supporting singles in quick sixes
-    #     notation = "&3.1.5.3.1.3"
-    #     return PlaceNotationGenerator(6, notation, "1", "1", "145")
+    @staticmethod
+    def stedman(stage: int):
+        assert stage % 2
+
+        if stage == 5:
+            return PlaceNotationGenerator.stedman_doubles()
+
+        stage_bell = Helpers.convert_to_bell_string(stage)
+        stage_bell_1 = Helpers.convert_to_bell_string(stage - 1)
+        stage_bell_2 = Helpers.convert_to_bell_string(stage - 2)
+
+        main_body = [stage_bell if i % 2 else "1" for i in range(1, 2 * stage + 1)]
+        notation = f"3.1.{stage_bell}.3.1.3.1.3.{stage_bell}.1.3.1"
+        return PlaceNotationGenerator(stage + 1, notation, bob={2: stage_bell_2, 8: stage_bell_2},
+                                      single={2: f"{stage_bell_2}{stage_bell_1}{stage_bell}",
+                                              8: f"{stage_bell_2}{stage_bell_1}{stage_bell}"})
+
+    @staticmethod
+    def stedman_doubles():
+        notation = "3.1.5.3.1.3.1.3.5.1.3.1"
+        return PlaceNotationGenerator(6, notation, bob={}, single={5: "345", 11: "145"})
