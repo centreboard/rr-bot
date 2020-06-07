@@ -1,6 +1,7 @@
 from typing import List
 
 import itertools
+import re
 
 
 class Helpers:
@@ -13,7 +14,7 @@ class Helpers:
 
         symmetric = pn_str.startswith('&')
 
-        cleaned = pn_str.replace('x', '-').replace('-', '.-.').strip('.& ').split('.')
+        cleaned = re.sub("[.]*[x-][.]*", ".-.", pn_str).strip('.& ').split('.')
 
         converted = [[Helpers.convert_bell_string(y) for y in place] if place != '-' else Helpers.cross_pn
                      for place in cleaned]
@@ -26,8 +27,13 @@ class Helpers:
 
     @staticmethod
     def convert_bell_string(bell: str) -> int:
-        return Helpers._lookup.index(bell)
+        try:
+            return Helpers._lookup.index(bell)
+        except ValueError:
+            raise ValueError(f"'{bell}' is not known bell symbol")
 
     @staticmethod
     def convert_to_bell_string(bell: int) -> str:
+        if bell <= 0 or bell >= len(Helpers._lookup):
+            raise ValueError(f"'{bell}' is not known bell number")
         return Helpers._lookup[bell]

@@ -9,6 +9,9 @@ class RowGenerator(ABC):
         self.stage = stage
         self._logger = logger
 
+        # Ensure there is a cover bell
+        self.number_of_bells = self.stage + 1 if self.stage % 2 else self.stage
+
         self._has_go = auto_start
         self._has_bob = False
         self._has_single = False
@@ -19,8 +22,12 @@ class RowGenerator(ABC):
         if not self._has_go or self._index < 0 or (self._index == 0 and not is_handstroke):
             if self._index < 0:
                 self._index += 1
+            self.log("Rounds")
             return self._rounds()
+
         self._row = self._gen_row(self._row, is_handstroke, self._index)
+        self._add_cover_if_required()
+
         self._index += 1
 
         self.log(" ".join([Helpers.convert_to_bell_string(bell) for bell in self._row]))
@@ -49,7 +56,11 @@ class RowGenerator(ABC):
         self._has_single = False
 
     def _rounds(self):
-        return [i for i in range(1, self.stage + 1)]
+        return [i for i in range(1, self.number_of_bells + 1)]
+
+    def _add_cover_if_required(self):
+        if len(self._row) == self.number_of_bells - 1:
+            self._row.append(self.number_of_bells)
 
     def log(self, message: str):
         self._logger(f"ROWGEN: {message}")

@@ -16,6 +16,14 @@ class DixonoidsGenerator(RowGenerator):
 
     def __init__(self, stage: int, plain_rules: Dict[int, List[str]], bob_rules: Dict[int, List[str]] = None,
                  single_rules: Dict[int, List[str]] = None, auto_start=True, logger=print):
+        """
+        :param plain_rules: Dictionary of leading bell: [handstroke pn, backstroke pn]
+                            0: Matches any other bell
+        :param bob_rules: Dictionary of leading bell: [handstroke pn, backstroke pn]
+                          Only include bells which lead when a bob is rung
+        :param single_rules: Dictionary of leading bell: [handstroke pn, backstroke pn]
+                          Only include bells which lead when a single is rung
+        """
         super(DixonoidsGenerator, self).__init__(stage, auto_start, logger)
         if bob_rules is None:
             bob_rules = self.DefaultBob

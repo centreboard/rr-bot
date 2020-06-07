@@ -28,11 +28,11 @@ class PlaceNotationGenerator(RowGenerator):
         lead_index = index % self.lead_len
 
         if self._has_bob and self.bobs_pn.get(lead_index):
-            self._generating_call_pn = self.bobs_pn[lead_index]
+            self._generating_call_pn = list(self.bobs_pn[lead_index])
             self.log(f"Bob at index {lead_index}")
             self.reset_calls()
         elif self._has_single and self.singles_pn.get(lead_index):
-            self._generating_call_pn = self.singles_pn[lead_index]
+            self._generating_call_pn = list(self.singles_pn[lead_index])
             self.log(f"Single at index {lead_index}")
             self.reset_calls()
 
@@ -52,7 +52,7 @@ class PlaceNotationGenerator(RowGenerator):
         main_body = [stage_bell if i % 2 else "1" for i in range(1, 2 * stage + 1)]
         main_body[0] = "3"
         notation = ".".join(main_body)
-        return PlaceNotationGenerator(stage + 1, notation, bob={-2: "3"}, single={-2: "3.123"})
+        return PlaceNotationGenerator(stage, notation, bob={-2: "3"}, single={-2: "3.123"})
 
     @staticmethod
     def stedman(stage: int):
@@ -65,13 +65,12 @@ class PlaceNotationGenerator(RowGenerator):
         stage_bell_1 = Helpers.convert_to_bell_string(stage - 1)
         stage_bell_2 = Helpers.convert_to_bell_string(stage - 2)
 
-        main_body = [stage_bell if i % 2 else "1" for i in range(1, 2 * stage + 1)]
         notation = f"3.1.{stage_bell}.3.1.3.1.3.{stage_bell}.1.3.1"
-        return PlaceNotationGenerator(stage + 1, notation, bob={2: stage_bell_2, 8: stage_bell_2},
+        return PlaceNotationGenerator(stage, notation, bob={2: stage_bell_2, 8: stage_bell_2},
                                       single={2: f"{stage_bell_2}{stage_bell_1}{stage_bell}",
                                               8: f"{stage_bell_2}{stage_bell_1}{stage_bell}"})
 
     @staticmethod
     def stedman_doubles():
         notation = "3.1.5.3.1.3.1.3.5.1.3.1"
-        return PlaceNotationGenerator(6, notation, bob={}, single={5: "345", 11: "145"})
+        return PlaceNotationGenerator(5, notation, bob={}, single={5: "345", 11: "145"})

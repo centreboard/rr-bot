@@ -80,7 +80,7 @@ class RingingBot:
 
     def _initialise_tower(self):
         self.log("initialise_tower")
-        self.tower.set_number_of_bells(self.row_gen.stage)
+        self.tower.set_number_of_bells(self.row_gen.number_of_bells)
         self.tower.set_at_hand()
 
     def log(self, message):

@@ -20,9 +20,9 @@ def main():
     tower = RingingRoomTower(TOWER_ID, DEFAULT_URL)
 
     # row_gen = PlainHuntGenerator(8)
-    # row_gen = PlaceNotationGenerator(8, "&x1x1x1x1", "2")
+    row_gen = PlaceNotationGenerator(8, "x1", bob={1: "6"})
     # row_gen = ComplibCompositionReader(65034)
-    row_gen = MethodPlaceNotationGenerator("Single Oxford Bob Triples")
+    # row_gen = MethodPlaceNotationGenerator("Single Oxford Bob Triples")
     # row_gen = DixonoidsGenerator(6, DixonoidsGenerator.DixonsRules)
     # row_gen = PlaceNotationGenerator.stedman(11)
 
