@@ -15,18 +15,32 @@ class RowGenerator(ABC):
         # Ensure there is a cover bell
         self.number_of_bells = self.stage + 1 if self.stage % 2 else self.stage
 
+        self.auto_start = auto_start
         self._has_go = auto_start
         self._has_bob = False
         self._has_single = False
         self._index = -1
-        self._row = self._rounds()
+        self._row = self.rounds()
+
+    def reset(self):
+        self.logger.info("Reset")
+        self._has_go = self.auto_start
+        self._has_bob = False
+        self._has_single = False
+        self._index = -1
+        self._row = self.rounds()
+
+    def reset_calls(self):
+        self.logger.info("Reset calls")
+        self._has_bob = False
+        self._has_single = False
 
     def next_row(self, is_handstroke: bool):
         if not self._has_go or self._index < 0 or (self._index == 0 and not is_handstroke):
             if self._index < 0:
                 self._index += 1
             self.logger.info("Rounds")
-            return self._rounds()
+            return self.rounds()
 
         self._row = self._gen_row(self._row, is_handstroke, self._index)
         self._add_cover_if_required()
@@ -38,28 +52,16 @@ class RowGenerator(ABC):
 
         return self._row
 
-    def go(self):
+    def set_go(self):
         self._has_go = True
 
-    def bob(self):
+    def set_bob(self):
         self._has_bob = True
 
-    def single(self):
+    def set_single(self):
         self._has_single = True
 
-    def reset(self):
-        self.logger.info("Reset")
-        self._index = 0
-        self._has_go = False
-        self._row = self._rounds()
-        self.reset_calls()
-
-    def reset_calls(self):
-        self.logger.info("Reset calls")
-        self._has_bob = False
-        self._has_single = False
-
-    def _rounds(self):
+    def rounds(self):
         return [i for i in range(1, self.number_of_bells + 1)]
 
     def _add_cover_if_required(self):

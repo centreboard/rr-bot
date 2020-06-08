@@ -37,7 +37,7 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
         for row in self.yield_rows(generator, 4):
             self.assertEqual(row, rounds)
 
-        generator.go()
+        generator.set_go()
 
         self.assertNotEqual(generator.next_row(True), rounds)
 
@@ -50,7 +50,7 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
         for row in self.yield_rows(generator, 5):
             self.assertEqual(row, rounds)
 
-        generator.go()
+        generator.set_go()
 
         self.assertEqual(generator.next_row(False), rounds)
         self.assertNotEqual(generator.next_row(True), rounds)
@@ -69,10 +69,11 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
                           [1, 2, 3, 4]],
                          rows)
 
-    def test_reset(self):
+    def test_reset_no_auto_starts(self):
         stage = 3
         rounds = self.rounds(stage)
-        generator = PlainHuntGenerator(stage, auto_start=True)
+        generator = PlainHuntGenerator(stage, auto_start=False)
+        generator.set_go()
 
         self.initial_rounds(generator, stage)
         initial_rows = self.gen_rows(generator, 3)
@@ -85,12 +86,47 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
         self.assertEqual([rounds, rounds, rounds],
                          rounds_rows)
 
-        generator.go()
+        generator.set_go()
         # Starts from beginning again
         second_rows = self.gen_rows(generator, 3)
         self.assertEqual([[2, 1, 3, 4],
                           [2, 3, 1, 4],
                           [3, 2, 1, 4]],
+                         second_rows)
+
+    def test_reset_auto_starts_backstroke(self):
+        stage = 3
+        rounds = self.rounds(stage)
+        generator = PlainHuntGenerator(stage, auto_start=True)
+
+        self.initial_rounds(generator, stage)
+        initial_rows = self.gen_rows(generator, 3)
+        self.assertEqual([[2, 1, 3, 4],
+                          [2, 3, 1, 4],
+                          [3, 2, 1, 4]],
+                         initial_rows)
+        generator.reset()
+        # Rounds then goes again
+        second_rows = self.gen_rows(generator, 3, start_at_hand=False)
+        self.assertEqual([rounds, [2, 1, 3, 4], [2, 3, 1, 4]],
+                         second_rows)
+
+    def test_reset_auto_starts_handstroke(self):
+        stage = 3
+        rounds = self.rounds(stage)
+        generator = PlainHuntGenerator(stage, auto_start=True)
+
+        self.initial_rounds(generator, stage)
+        initial_rows = self.gen_rows(generator, 4)
+        self.assertEqual([[2, 1, 3, 4],
+                          [2, 3, 1, 4],
+                          [3, 2, 1, 4],
+                          [3, 1, 2, 4]],
+                         initial_rows)
+        generator.reset()
+        # Rounds then goes again
+        second_rows = self.gen_rows(generator, 4, start_at_hand=True)
+        self.assertEqual([rounds, rounds, [2, 1, 3, 4], [2, 3, 1, 4]],
                          second_rows)
 
     def test_minimus(self):

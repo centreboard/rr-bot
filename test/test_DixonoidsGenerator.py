@@ -19,7 +19,7 @@ class DixonoidsGeneratorTests(GeneratorTestBase):
 
     def test_dixons_treble_leading_backstroke_bob(self):
         generator = DixonoidsGenerator(6, DixonoidsGenerator.DixonsRules)
-        generator.bob()
+        generator.set_bob()
         # Handstroke previous
         previous_row = [1, 3, 2, 4, 6, 5]
         new_row = generator._gen_row(previous_row, is_handstroke=False, index=0)
@@ -27,7 +27,7 @@ class DixonoidsGeneratorTests(GeneratorTestBase):
 
     def test_dixons_treble_leading_backstroke_single(self):
         generator = DixonoidsGenerator(6, DixonoidsGenerator.DixonsRules)
-        generator.single()
+        generator.set_single()
         # Handstroke previous
         previous_row = [1, 3, 2, 4, 6, 5]
         new_row = generator._gen_row(previous_row, is_handstroke=False, index=0)

@@ -3,6 +3,7 @@ import sys
 
 from RingingBot import RingingBot
 from RowGeneration.ComplibCompositionReader import ComplibCompositionReader
+from RowGeneration.GoAndStopCallingGenerator import GoAndStopCallingGenerator
 from RowGeneration.DixonoidsGenerator import DixonoidsGenerator
 from RowGeneration.MethodPlaceNotationGenerator import MethodPlaceNotationGenerator
 from RowGeneration.PlainHuntGenerator import PlainHuntGenerator
@@ -45,7 +46,7 @@ def main():
 
     row_gen = row_generator()
 
-    bot = RingingBot(tower, row_gen, INTERBELL_GAP, auto_start=True)
+    bot = RingingBot(tower, row_gen, INTERBELL_GAP, call_look_to=True)
 
     bot.main_loop(initialise_tower=True)
 

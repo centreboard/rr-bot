@@ -24,4 +24,4 @@ class ComplibCompositionReader(RowGenerator):
     def _gen_row(self, previous_row: List[int], is_handstroke: bool, index: int) -> List[int]:
         if index < len(self.loaded_rows):
             return self.loaded_rows[index]
-        return self._rounds()
+        return self.rounds()
