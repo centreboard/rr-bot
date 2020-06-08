@@ -6,10 +6,10 @@ from RowGeneration.PlaceNotationGenerator import PlaceNotationGenerator
 
 
 class MethodPlaceNotationGenerator(PlaceNotationGenerator):
-    def __init__(self, method_title: str, auto_start=True, logger=print):
+    def __init__(self, method_title: str, auto_start=True):
         method_xml = self._fetch_method(method_title)
         method_pn, stage = self._parse_xml(method_xml)
-        super(MethodPlaceNotationGenerator, self).__init__(stage, method_pn, auto_start=auto_start, logger=logger)
+        super(MethodPlaceNotationGenerator, self).__init__(stage, method_pn, auto_start=auto_start)
 
     @staticmethod
     def _parse_xml(method_xml: str):

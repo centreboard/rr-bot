@@ -2,7 +2,6 @@ import unittest
 
 from RowGeneration.PlainHuntGenerator import PlainHuntGenerator
 from test.GeneratorTestBase import GeneratorTestBase
-from test.TestLogger import TestLogger
 
 
 class PlainHuntGeneratorTests(GeneratorTestBase):
@@ -10,9 +9,8 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
     def test_auto_start_rounds_twice(self):
         stage = 4
         rounds = self.rounds(stage)
-        logger = TestLogger(self)
 
-        generator = PlainHuntGenerator(stage, auto_start=True, logger=logger.log)
+        generator = PlainHuntGenerator(stage, auto_start=True)
 
         self.assertEqual(generator.next_row(True), rounds)
         self.assertEqual(generator.next_row(False), rounds)
@@ -22,21 +20,19 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
     def test_not_auto_start_keeps_rounds(self):
         stage = 4
         rounds = self.rounds(stage)
-        logger = TestLogger(self)
 
-        generator = PlainHuntGenerator(stage, auto_start=False, logger=logger.log)
+        generator = PlainHuntGenerator(stage, auto_start=False)
 
-        for row in self.yield_rows(generator, 10):
-            self.assertEqual(row, rounds)
-
-        logger.assert_contains("ROWGEN: Rounds", 10)
+        with self.assertLogs() as test_logging:
+            for row in self.yield_rows(generator, 10):
+                self.assertEqual(row, rounds)
+            self.assertEqual(test_logging.output, ["INFO:ROWGEN:Rounds" for _ in range(10)])
 
     def test_not_auto_start_rounds_until_go(self):
         stage = 4
         rounds = self.rounds(stage)
-        logger = TestLogger(self)
 
-        generator = PlainHuntGenerator(stage, auto_start=False, logger=logger.log)
+        generator = PlainHuntGenerator(stage, auto_start=False)
 
         for row in self.yield_rows(generator, 4):
             self.assertEqual(row, rounds)
@@ -48,9 +44,8 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
     def test_not_auto_start_rounds_until_go_waits_for_handstroke(self):
         stage = 4
         rounds = self.rounds(stage)
-        logger = TestLogger(self)
 
-        generator = PlainHuntGenerator(stage, auto_start=False, logger=logger.log)
+        generator = PlainHuntGenerator(stage, auto_start=False)
 
         for row in self.yield_rows(generator, 5):
             self.assertEqual(row, rounds)
@@ -62,8 +57,7 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
 
     def test_singles(self):
         stage = 3
-        logger = TestLogger(self)
-        generator = PlainHuntGenerator(stage, auto_start=True, logger=logger.log)
+        generator = PlainHuntGenerator(stage, auto_start=True)
 
         self.initial_rounds(generator, stage)
         rows = self.gen_rows(generator, 6)
@@ -78,8 +72,7 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
     def test_reset(self):
         stage = 3
         rounds = self.rounds(stage)
-        logger = TestLogger(self)
-        generator = PlainHuntGenerator(stage, auto_start=True, logger=logger.log)
+        generator = PlainHuntGenerator(stage, auto_start=True)
 
         self.initial_rounds(generator, stage)
         initial_rows = self.gen_rows(generator, 3)
@@ -102,8 +95,7 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
 
     def test_minimus(self):
         stage = 4
-        logger = TestLogger(self)
-        generator = PlainHuntGenerator(stage, auto_start=True, logger=logger.log)
+        generator = PlainHuntGenerator(stage, auto_start=True)
 
         self.initial_rounds(generator, stage)
         rows = self.gen_rows(generator, 8)
@@ -119,8 +111,7 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
 
     def test_cinques(self):
         stage = 11
-        logger = TestLogger(self)
-        generator = PlainHuntGenerator(stage, auto_start=True, logger=logger.log)
+        generator = PlainHuntGenerator(stage, auto_start=True)
 
         self.initial_rounds(generator, stage)
         rows = self.gen_rows(generator, 3)
@@ -131,8 +122,7 @@ class PlainHuntGeneratorTests(GeneratorTestBase):
 
     def test_maximus(self):
         stage = 12
-        logger = TestLogger(self)
-        generator = PlainHuntGenerator(stage, auto_start=True, logger=logger.log)
+        generator = PlainHuntGenerator(stage, auto_start=True)
 
         self.initial_rounds(generator, stage)
         rows = self.gen_rows(generator, 3)

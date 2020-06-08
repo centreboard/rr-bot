@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import List
 
@@ -5,9 +6,11 @@ from RowGeneration.Helpers import Helpers
 
 
 class RowGenerator(ABC):
-    def __init__(self, stage: int, auto_start=True, logger=print):
+    logger_name = "ROWGEN"
+
+    def __init__(self, stage: int, auto_start=True):
         self.stage = stage
-        self._logger = logger
+        self.logger = logging.getLogger(self.logger_name)
 
         # Ensure there is a cover bell
         self.number_of_bells = self.stage + 1 if self.stage % 2 else self.stage
@@ -22,7 +25,7 @@ class RowGenerator(ABC):
         if not self._has_go or self._index < 0 or (self._index == 0 and not is_handstroke):
             if self._index < 0:
                 self._index += 1
-            self.log("Rounds")
+            self.logger.info("Rounds")
             return self._rounds()
 
         self._row = self._gen_row(self._row, is_handstroke, self._index)
@@ -30,7 +33,8 @@ class RowGenerator(ABC):
 
         self._index += 1
 
-        self.log(" ".join([Helpers.convert_to_bell_string(bell) for bell in self._row]))
+        message = " ".join([Helpers.convert_to_bell_string(bell) for bell in self._row])
+        self.logger.info(message)
 
         return self._row
 
@@ -44,14 +48,14 @@ class RowGenerator(ABC):
         self._has_single = True
 
     def reset(self):
-        self.log("Reset")
+        self.logger.info("Reset")
         self._index = 0
         self._has_go = False
         self._row = self._rounds()
         self.reset_calls()
 
     def reset_calls(self):
-        self.log("Reset calls")
+        self.logger.info("Reset calls")
         self._has_bob = False
         self._has_single = False
 
@@ -61,9 +65,6 @@ class RowGenerator(ABC):
     def _add_cover_if_required(self):
         if len(self._row) == self.number_of_bells - 1:
             self._row.append(self.number_of_bells)
-
-    def log(self, message: str):
-        self._logger(f"ROWGEN: {message}")
 
     @abstractmethod
     def _gen_row(self, previous_row: List[int], is_handstroke: bool, index: int) -> List[int]:

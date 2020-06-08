@@ -9,8 +9,8 @@ class PlaceNotationGenerator(RowGenerator):
     DefaultSingle = {-1: '1234'}
 
     def __init__(self, stage: int, method: str, bob: Dict[int, str] = None, single: Dict[int, str] = None,
-                 auto_start=True, logger=print):
-        super(PlaceNotationGenerator, self).__init__(stage, auto_start, logger)
+                 auto_start=True):
+        super(PlaceNotationGenerator, self).__init__(stage, auto_start)
         if bob is None:
             bob = PlaceNotationGenerator.DefaultBob
         if single is None:
@@ -29,11 +29,11 @@ class PlaceNotationGenerator(RowGenerator):
 
         if self._has_bob and self.bobs_pn.get(lead_index):
             self._generating_call_pn = list(self.bobs_pn[lead_index])
-            self.log(f"Bob at index {lead_index}")
+            self.logger.info(f"Bob at index {lead_index}")
             self.reset_calls()
         elif self._has_single and self.singles_pn.get(lead_index):
             self._generating_call_pn = list(self.singles_pn[lead_index])
-            self.log(f"Single at index {lead_index}")
+            self.logger.info(f"Single at index {lead_index}")
             self.reset_calls()
 
         if self._generating_call_pn:
