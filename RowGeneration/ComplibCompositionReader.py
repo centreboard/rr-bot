@@ -2,7 +2,7 @@ from typing import List
 
 import requests
 
-from RowGeneration.Helpers import Helpers
+from RowGeneration.Helpers import convert_bell_string
 from RowGeneration.RowGenerator import RowGenerator
 
 
@@ -16,7 +16,7 @@ class ComplibCompositionReader(RowGenerator):
 
         # New line separated, skip the first line (rounds)
         split_rows = request_rows.text.splitlines(False)[1::]
-        self.loaded_rows = [[Helpers.convert_bell_string(bell) for bell in row] for row in split_rows]
+        self.loaded_rows = [[convert_bell_string(bell) for bell in row] for row in split_rows]
 
         stage = len(self.loaded_rows[0])
         super().__init__(stage, auto_start)

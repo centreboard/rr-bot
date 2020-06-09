@@ -1,6 +1,6 @@
 from typing import List, Dict, Union, Tuple
 
-from RowGeneration.Helpers import Helpers
+from RowGeneration.Helpers import convert_pn, convert_to_bell_string
 from RowGeneration.RowGenerator import RowGenerator
 
 
@@ -16,11 +16,11 @@ class PlaceNotationGenerator(RowGenerator):
         if single is None:
             single = PlaceNotationGenerator.DefaultSingle
 
-        self.method_pn = Helpers.convert_pn(method)
+        self.method_pn = convert_pn(method)
         self.lead_len = len(self.method_pn)
 
-        self.bobs_pn = {i % self.lead_len: Helpers.convert_pn(pn) for i, pn in bob.items()}
-        self.singles_pn = {i % self.lead_len: Helpers.convert_pn(pn) for i, pn in single.items()}
+        self.bobs_pn = {i % self.lead_len: convert_pn(pn) for i, pn in bob.items()}
+        self.singles_pn = {i % self.lead_len: convert_pn(pn) for i, pn in single.items()}
 
         self._generating_call_pn: List[List[int]] = []
 
@@ -47,7 +47,7 @@ class PlaceNotationGenerator(RowGenerator):
     def grandsire(stage: int):
         assert stage % 2
 
-        stage_bell = Helpers.convert_to_bell_string(stage)
+        stage_bell = convert_to_bell_string(stage)
 
         main_body = [stage_bell if i % 2 else "1" for i in range(1, 2 * stage + 1)]
         main_body[0] = "3"
@@ -61,9 +61,9 @@ class PlaceNotationGenerator(RowGenerator):
         if stage == 5:
             return PlaceNotationGenerator.stedman_doubles()
 
-        stage_bell = Helpers.convert_to_bell_string(stage)
-        stage_bell_1 = Helpers.convert_to_bell_string(stage - 1)
-        stage_bell_2 = Helpers.convert_to_bell_string(stage - 2)
+        stage_bell = convert_to_bell_string(stage)
+        stage_bell_1 = convert_to_bell_string(stage - 1)
+        stage_bell_2 = convert_to_bell_string(stage - 2)
 
         notation = f"3.1.{stage_bell}.3.1.3.1.3.{stage_bell}.1.3.1"
         return PlaceNotationGenerator(stage, notation, bob={2: stage_bell_2, 8: stage_bell_2},

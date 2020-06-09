@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import List
 
-from RowGeneration.Helpers import Helpers
+from RowGeneration.Helpers import convert_to_bell_string
 
 
 class RowGenerator(ABC):
@@ -47,7 +47,7 @@ class RowGenerator(ABC):
 
         self._index += 1
 
-        message = " ".join([Helpers.convert_to_bell_string(bell) for bell in self._row])
+        message = " ".join([convert_to_bell_string(bell) for bell in self._row])
         self.logger.info(message)
 
         return self._row

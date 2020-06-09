@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from RowGeneration.Helpers import Helpers
+from RowGeneration.Helpers import convert_pn
 from RowGeneration.RowGenerator import RowGenerator
 
 
@@ -56,4 +56,4 @@ class DixonoidsGenerator(RowGenerator):
 
     @staticmethod
     def _convert_pn_dict(rules: Dict[int, List[str]]) -> Dict[int, List[List[int]]]:
-        return {key: [Helpers.convert_pn(pn)[0] for pn in places] for key, places in rules.items()}
+        return {key: [convert_pn(pn)[0] for pn in places] for key, places in rules.items()}
