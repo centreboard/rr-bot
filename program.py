@@ -46,7 +46,7 @@ def main():
 
     row_gen = row_generator()
 
-    bot = RingingBot(tower, row_gen, INTERBELL_GAP, call_look_to=True)
+    bot = RingingBot(tower, row_gen, INTERBELL_GAP, call_look_to=True, wait_for_user=True)
 
     bot.main_loop(initialise_tower=True)
 

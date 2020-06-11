@@ -1,6 +1,6 @@
 import logging
 from time import sleep
-from typing import Optional
+from typing import Optional, Callable
 
 import socketio
 
@@ -15,8 +15,9 @@ class RingingRoomTower:
         self._bell_state = []
         self._assigned_users = {}
 
-        self.on_call = None
-        self.on_reset = None
+        self.on_call: Optional[Callable[[str], None]] = None
+        self.on_bell_rung: Optional[Callable[[int], None]] = None
+        self.on_reset: Optional[Callable[[], None]] = None
 
         self._url = url
         self._socket_io_client: Optional[socketio.Client] = None
@@ -57,6 +58,12 @@ class RingingRoomTower:
     def user_controlled(self, bell: int):
         return self._assigned_users.get(bell, "") != ""
 
+    def has_bell_rung(self, bell: int, is_handstroke: bool):
+        if bell > len(self._bell_state) or bell <= 0:
+            self.logger.error(f"Bell {bell} not in tower")
+            return False
+        return self._bell_state[bell - 1] != is_handstroke
+
     def make_call(self, call: str):
         self._emit("c_call", {"call": call, "tower_id": self.tower_id}, f"Call '{call}'")
 
@@ -84,7 +91,7 @@ class RingingRoomTower:
         self._join_tower()
 
         # Currently just care about global state when a bell in rung
-        self._socket_io_client.on("s_bell_rung", self._on_global_bell_state)
+        self._socket_io_client.on("s_bell_rung", self._on_bell_rung)
         self._socket_io_client.on("s_global_state", self._on_global_bell_state)
         self._socket_io_client.on("s_size_change", self._on_size_change)
         self._socket_io_client.on("s_assign_user", self._on_assign_user)
@@ -106,6 +113,13 @@ class RingingRoomTower:
 
         if message:
             self.logger.info(f"EMIT: {message}")
+
+    def _on_bell_rung(self, data):
+        bell = data["who_rang"]
+        if self.on_bell_rung is not None:
+            self.on_bell_rung(bell)
+
+        self._on_global_bell_state(data)
 
     def _on_global_bell_state(self, data):
         bell_state = data["global_bell_state"]

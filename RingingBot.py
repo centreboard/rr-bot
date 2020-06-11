@@ -5,15 +5,24 @@ from Calls import Calls
 from RingingRoomTower import RingingRoomTower
 from RowGeneration.RowGenerator import RowGenerator
 
+class BellGap:
+    def __init__(self, target: float):
+        self.target = target
+        self.gap = target
+
+    def wait(self):
+        sleep(self.gap)
+
 
 class RingingBot:
     logger_name = "BOT"
 
     def __init__(self, tower: RingingRoomTower, row_gen: RowGenerator, bell_gap: float,
-                 call_look_to=True, stop_at_rounds=True, call_thats_all=False):
+                 call_look_to=True, stop_at_rounds=True, call_thats_all=False, wait_for_user=False):
         self.tower = tower
         self.row_gen = row_gen
         self.bell_gap = bell_gap
+        self.wait_for_user = wait_for_user
 
         self.call_look_to = call_look_to
         self.stop_at_rounds = stop_at_rounds
@@ -74,6 +83,9 @@ class RingingBot:
             if not self.tower.user_controlled(bell):
                 self.logger.debug(f"User controlled {bell}")
                 self.tower.ring_bell(bell, self.is_handstroke)
+            elif self.wait_for_user:
+                while not self.tower.has_bell_rung(bell, self.is_handstroke):
+                    sleep(0.01)
             sleep(self.bell_gap)
 
     def _set_stopping_if_rounds(self, rounds, row):
